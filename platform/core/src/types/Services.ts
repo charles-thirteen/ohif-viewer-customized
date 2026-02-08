@@ -14,6 +14,7 @@ import {
   UIDialogService,
   UIViewportDialogService,
   MultiMonitorService,
+  StatePersistenceService,
 } from '../services';
 
 /**
@@ -36,6 +37,7 @@ interface Services {
   uiViewportDialogService?: UIViewportDialogService;
   panelService?: PanelService;
   multiMonitorService?: MultiMonitorService;
+  statePersistenceService?: StatePersistenceService;
 }
 
 export default Services;

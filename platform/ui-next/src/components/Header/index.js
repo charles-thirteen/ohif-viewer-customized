@@ -1,2 +1,3 @@
+import DentalHeader from './DentalHeader';
 import Header from './Header';
-export { Header };
+export { Header, DentalHeader };

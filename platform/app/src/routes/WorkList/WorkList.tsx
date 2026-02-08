@@ -10,8 +10,7 @@ import { useTranslation } from 'react-i18next';
 import filtersMeta from './filtersMeta.js';
 import { useAppConfig } from '@state';
 import { useDebounce, useSearchParams } from '../../hooks';
-import { utils, Types as coreTypes } from '@ohif/core';
-
+import { utils, Types as coreTypes, useTheme } from '@ohif/core';
 import {
   StudyListExpandedRow,
   EmptyStudies,
@@ -39,6 +38,7 @@ import {
 import { Types } from '@ohif/ui';
 
 import { preserveQueryParameters, preserveQueryStrings } from '../../utils/preserveQueryParameters';
+import DentalHeader from '@ohif/ui-next/components/Header/DentalHeader';
 
 const PatientInfoVisibility = Types.PatientInfoVisibility;
 
@@ -126,6 +126,10 @@ function WorkList({
       return 0;
     });
   }, [canSort, studies, shouldUseDefaultSort, sortBy, sortModifier]);
+
+  // Theme
+  // const [theme, setTheme] = useState<Types.AppTheme>('RADIOLOGY');
+  const { theme, setTheme } = useTheme();
 
   // ~ Rows & Studies
   const [expandedRows, setExpandedRows] = useState([]);
@@ -554,11 +558,22 @@ function WorkList({
   return (
     <div className="flex h-screen flex-col bg-black">
       <Header
+        theme={theme}
         isSticky
         menuOptions={menuOptions}
         isReturnEnabled={false}
         WhiteLabeling={appConfig.whiteLabeling}
         showPatientInfo={PatientInfoVisibility.DISABLED}
+        onToggleDentalMode={() => setTheme('DENTAL')}
+      />
+      <DentalHeader
+        theme={theme}
+        isSticky
+        menuOptions={menuOptions}
+        isReturnEnabled={false}
+        WhiteLabeling={appConfig.whiteLabeling}
+        showPatientInfo={PatientInfoVisibility.DISABLED}
+        onToggleRadiologyTheme={() => setTheme('RADIOLOGY')}
       />
       <Onboarding />
       <InvestigationalUseDialog dialogConfiguration={appConfig?.investigationalUseDialog} />

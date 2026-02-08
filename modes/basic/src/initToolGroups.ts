@@ -1,3 +1,5 @@
+import { utilities as csUtils } from '@cornerstonejs/core';
+
 const colours = {
   'viewport-0': 'rgb(200, 0, 0)',
   'viewport-1': 'rgb(200, 200, 0)',
@@ -37,7 +39,23 @@ function initDefaultToolGroup(extensionManager, toolGroupService, commandsManage
       },
     ],
     passive: [
-      { toolName: toolNames.Length },
+      {
+        toolName: toolNames.Length,
+        configuration: {
+          getTextLines: (data, targetId) => {
+            const stats = data.cachedStats[targetId];
+            const { length, unit } = stats;
+            if (length === undefined || length === null || isNaN(length)) {
+              return;
+            }
+            const rounded = csUtils.roundNumber(length);
+            const text = data.label
+              ? `${data.label}: ${rounded} ${unit}`
+              : `${rounded} ${unit}`;
+            return [text];
+          },
+        },
+      },
       {
         toolName: toolNames.ArrowAnnotate,
         configuration: {
@@ -66,7 +84,26 @@ function initDefaultToolGroup(extensionManager, toolGroupService, commandsManage
       { toolName: toolNames.CircleROI },
       { toolName: toolNames.RectangleROI },
       { toolName: toolNames.StackScroll },
-      { toolName: toolNames.Angle },
+      {
+        toolName: toolNames.Angle,
+        configuration: {
+          getTextLines: (data, targetId) => {
+            const stats = data.cachedStats[targetId];
+            const { angle } = stats;
+            if (angle === undefined) {
+              return;
+            }
+            if (isNaN(angle)) {
+              return [`${angle}`];
+            }
+            const rounded = csUtils.roundNumber(angle);
+            const text = data.label
+              ? `${data.label}: ${rounded} \u00B0`
+              : `${rounded} \u00B0`;
+            return [text];
+          },
+        },
+      },
       { toolName: toolNames.CobbAngle },
       { toolName: toolNames.Magnify },
       { toolName: toolNames.CalibrationLine },
@@ -197,7 +234,23 @@ function initMPRToolGroup(extensionManager, toolGroupService, commandsManager) {
       },
     ],
     passive: [
-      { toolName: toolNames.Length },
+      {
+        toolName: toolNames.Length,
+        configuration: {
+          getTextLines: (data, targetId) => {
+            const stats = data.cachedStats[targetId];
+            const { length, unit } = stats;
+            if (length === undefined || length === null || isNaN(length)) {
+              return;
+            }
+            const rounded = csUtils.roundNumber(length);
+            const text = data.label
+              ? `${data.label}: ${rounded} ${unit}`
+              : `${rounded} ${unit}`;
+            return [text];
+          },
+        },
+      },
       {
         toolName: toolNames.ArrowAnnotate,
         configuration: {
@@ -223,7 +276,26 @@ function initMPRToolGroup(extensionManager, toolGroupService, commandsManager) {
       { toolName: toolNames.CircleROI },
       { toolName: toolNames.RectangleROI },
       { toolName: toolNames.StackScroll },
-      { toolName: toolNames.Angle },
+      {
+        toolName: toolNames.Angle,
+        configuration: {
+          getTextLines: (data, targetId) => {
+            const stats = data.cachedStats[targetId];
+            const { angle } = stats;
+            if (angle === undefined) {
+              return;
+            }
+            if (isNaN(angle)) {
+              return [`${angle}`];
+            }
+            const rounded = csUtils.roundNumber(angle);
+            const text = data.label
+              ? `${data.label}: ${rounded} \u00B0`
+              : `${rounded} \u00B0`;
+            return [text];
+          },
+        },
+      },
       { toolName: toolNames.CobbAngle },
       { toolName: toolNames.PlanarFreehandROI },
       { toolName: toolNames.SplineROI },

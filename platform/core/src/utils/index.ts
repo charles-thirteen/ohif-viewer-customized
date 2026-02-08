@@ -28,6 +28,7 @@ import debounce from './debounce';
 import roundNumber from './roundNumber';
 import toNumber from './toNumber';
 import downloadCSVReport from './downloadCSVReport';
+import downloadJSONReport from './downloadJSONReport';
 import isEqualWithin from './isEqualWithin';
 import addAccessors from './addAccessors';
 import {
@@ -93,6 +94,7 @@ const utils = {
   roundNumber,
   toNumber,
   downloadCSVReport,
+  downloadJSONReport,
   splitComma,
   getSplitParam,
   generateAcceptHeader,
@@ -136,6 +138,7 @@ export {
   roundNumber,
   toNumber,
   downloadCSVReport,
+  downloadJSONReport,
   splitComma,
   getSplitParam,
   generateAcceptHeader,

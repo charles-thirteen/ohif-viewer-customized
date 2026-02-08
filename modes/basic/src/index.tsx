@@ -1,5 +1,6 @@
 import update from 'immutability-helper';
 import { ToolbarService, utils } from '@ohif/core';
+import { annotation as csToolsAnnotation } from '@cornerstonejs/tools';
 
 import initToolGroups from './initToolGroups';
 import toolbarButtons from './toolbarButtons';
@@ -133,10 +134,123 @@ export function onModeEnter({
   panelService,
   segmentationService,
 }: withAppTypes) {
-  const { measurementService, toolbarService, toolGroupService, customizationService } =
-    servicesManager.services;
+  const {
+    measurementService,
+    toolbarService,
+    toolGroupService,
+    customizationService,
+    statePersistenceService,
+    cornerstoneViewportService,
+  } = servicesManager.services;
 
   measurementService.clearMeasurements();
+
+  // Subscribe to measurement changes for auto-persistence to backend
+  if (statePersistenceService) {
+    // Flag to skip persistence during hydration (avoid re-saving loaded data)
+    let isHydrating = false;
+
+    // Hydrate saved annotations from backend once viewport is ready
+    const urlParams = new URLSearchParams(window.location.search);
+    const studyInstanceUIDs = urlParams.get('StudyInstanceUIDs');
+    if (studyInstanceUIDs) {
+      let hydrated = false;
+      const hydrateAnnotations = (savedAnnotations) => {
+        if (hydrated) {
+          return;
+        }
+        hydrated = true;
+        isHydrating = true;
+        console.log('[StatePersistence] Hydrating', savedAnnotations.length, 'annotations');
+        savedAnnotations.forEach(saved => {
+          const csAnnotation = saved.data?.cornerstoneAnnotation;
+          if (csAnnotation) {
+            csAnnotation.invalidated = true;
+            // Use top-level addAnnotation to fire ANNOTATION_ADDED events
+            // which triggers the measurement service pipeline
+            csToolsAnnotation.state.addAnnotation(csAnnotation, undefined);
+          }
+        });
+        isHydrating = false;
+      };
+
+      // Fetch annotations from backend, then wait for viewport to be ready
+      statePersistenceService.loadAnnotations(studyInstanceUIDs).then(savedAnnotations => {
+        if (!savedAnnotations || savedAnnotations.length === 0) {
+          return;
+        }
+
+        // If viewport is already ready, hydrate immediately
+        if (cornerstoneViewportService.getRenderingEngine()?.hasBeenDestroyed === false) {
+          const viewports = cornerstoneViewportService.getRenderingEngine()?.getViewports();
+          if (viewports && viewports.length > 0) {
+            hydrateAnnotations(savedAnnotations);
+            return;
+          }
+        }
+
+        // Otherwise wait for the first viewport data change
+        const sub = cornerstoneViewportService.subscribe(
+          cornerstoneViewportService.EVENTS.VIEWPORT_DATA_CHANGED,
+          () => {
+            hydrateAnnotations(savedAnnotations);
+            sub.unsubscribe();
+          }
+        );
+        this._statePersistenceSubscriptions.push(sub);
+      });
+    }
+
+    const persistMeasurements = () => {
+      if (isHydrating) {
+        return;
+      }
+      const measurements = measurementService.getMeasurements();
+      if (measurements.length === 0) {
+        return;
+      }
+      const studyUID = measurements[0]?.referenceStudyUID;
+      if (studyUID) {
+        statePersistenceService.saveAnnotationsDebounced(
+          studyUID,
+          measurements.map(m => {
+            // Get the full cornerstone annotation for this measurement
+            const csAnnotation = csToolsAnnotation.state.getAnnotation(m.uid);
+            return {
+              annotationUID: m.uid,
+              metadata: {
+                toolName: m.toolName,
+                referenceStudyUID: m.referenceStudyUID,
+                referenceSeriesUID: m.referenceSeriesUID,
+                SOPInstanceUID: m.SOPInstanceUID,
+                FrameOfReferenceUID: m.FrameOfReferenceUID,
+              },
+              data: {
+                label: m.label || '',
+                displayText: m.displayText || {},
+                cornerstoneAnnotation: csAnnotation || null,
+              },
+            };
+          })
+        );
+      }
+    };
+
+    this._statePersistenceSubscriptions = [
+      measurementService.subscribe(
+        measurementService.EVENTS.MEASUREMENT_ADDED,
+        persistMeasurements
+      ),
+      measurementService.subscribe(
+        measurementService.EVENTS.MEASUREMENT_UPDATED,
+        persistMeasurements
+      ),
+      measurementService.subscribe(
+        measurementService.EVENTS.MEASUREMENT_REMOVED,
+        persistMeasurements
+      ),
+    ];
+  }
 
   // Init Default and SR ToolGroups
   initToolGroups(extensionManager, toolGroupService, commandsManager);
@@ -195,7 +309,47 @@ export function onModeExit({ servicesManager }: withAppTypes) {
     cornerstoneViewportService,
     uiDialogService,
     uiModalService,
+    statePersistenceService,
+    measurementService,
   } = servicesManager.services;
+
+  // Flush any pending persistence saves before cleanup
+  if (statePersistenceService) {
+    const measurements = measurementService.getMeasurements();
+    if (measurements.length > 0) {
+      const studyUID = measurements[0]?.referenceStudyUID;
+      if (studyUID) {
+        statePersistenceService.saveAnnotations(
+          studyUID,
+          measurements.map(m => {
+            const csAnnotation = csToolsAnnotation.state.getAnnotation(m.uid);
+            return {
+              annotationUID: m.uid,
+              metadata: {
+                toolName: m.toolName,
+                referenceStudyUID: m.referenceStudyUID,
+                referenceSeriesUID: m.referenceSeriesUID,
+                SOPInstanceUID: m.SOPInstanceUID,
+                FrameOfReferenceUID: m.FrameOfReferenceUID,
+              },
+              data: {
+                label: m.label || '',
+                displayText: m.displayText || {},
+                cornerstoneAnnotation: csAnnotation || null,
+              },
+            };
+          })
+        );
+      }
+    }
+    statePersistenceService.flush();
+  }
+
+  // Clean up persistence subscriptions
+  if (this._statePersistenceSubscriptions) {
+    this._statePersistenceSubscriptions.forEach(sub => sub.unsubscribe());
+    this._statePersistenceSubscriptions.length = 0;
+  }
 
   this._activatePanelTriggersSubscriptions.forEach(sub => sub.unsubscribe());
   this._activatePanelTriggersSubscriptions.length = 0;
@@ -251,6 +405,11 @@ export const toolbarSections = {
     'PlanarFreehandROI',
     'SplineROI',
     'LivewireContour',
+    // Dental measurement presets
+    'PeriapicalLength',
+    'CanalAngle',
+    'CrownWidth',
+    'RootLength',
   ],
 
   MoreTools: [
@@ -337,6 +496,7 @@ export const modeInstance = {
   hide: false,
   displayName: 'Non-Longitudinal Basic',
   _activatePanelTriggersSubscriptions: [],
+  _statePersistenceSubscriptions: [],
   toolbarSections,
 
   /**

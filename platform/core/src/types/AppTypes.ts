@@ -146,6 +146,7 @@ declare global {
         maxNumPrefetchRequests: number;
         order: 'closest' | 'downward' | 'upward';
       };
+      dentalPracticeName?: string;
     }
 
     export interface Test {

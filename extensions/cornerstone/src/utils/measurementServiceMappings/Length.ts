@@ -64,7 +64,7 @@ const Length = {
 
     const mappedAnnotations = getMappedAnnotations(annotation, displaySetService);
 
-    const displayText = getDisplayText(mappedAnnotations, displaySet);
+    const displayText = getDisplayText(mappedAnnotations, displaySet, data.label);
     const getReport = () =>
       _getReport(mappedAnnotations, points, FrameOfReferenceUID, customizationService);
 
@@ -170,7 +170,7 @@ function _getReport(mappedAnnotations, points, FrameOfReferenceUID, customizatio
   };
 }
 
-function getDisplayText(mappedAnnotations, displaySet) {
+function getDisplayText(mappedAnnotations, displaySet, label?) {
   const displayText = {
     primary: [],
     secondary: [],
@@ -197,7 +197,8 @@ function getDisplayText(mappedAnnotations, displaySet) {
     return displayText;
   }
   const roundedLength = utils.roundNumber(length, 2);
-  displayText.primary.push(`${roundedLength} ${unit}`);
+  const primaryText = label ? `${label}: ${roundedLength} ${unit}` : `${roundedLength} ${unit}`;
+  displayText.primary.push(primaryText);
   displayText.secondary.push(`S: ${SeriesNumber}${instanceText}${frameText}`);
 
   return displayText;

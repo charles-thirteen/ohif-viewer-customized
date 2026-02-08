@@ -1,0 +1,109 @@
+import React from 'react';
+import { IconProps } from '../../types';
+
+export const DentalArch = (props: IconProps) => {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      {...props}
+    >
+      <g
+        stroke="none"
+        strokeWidth="1"
+        fill="none"
+        fillRule="evenodd"
+      >
+        <rect
+          x="0"
+          y="0"
+          width="24"
+          height="24"
+        ></rect>
+        <g
+          transform="translate(2, 3)"
+          stroke="currentColor"
+          strokeWidth="1.3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M1,10 C1,5.2 4.6,1 10,1 C15.4,1 19,5.2 19,10" />
+          <path d="M2.5,10 C2.5,13.5 5.5,17 10,17 C14.5,17 17.5,13.5 17.5,10" />
+          <line
+            x1="3"
+            y1="7.5"
+            x2="3"
+            y2="9.5"
+          />
+          <line
+            x1="5"
+            y1="4.5"
+            x2="5"
+            y2="6.5"
+          />
+          <line
+            x1="7.2"
+            y1="2.8"
+            x2="7.2"
+            y2="4.8"
+          />
+          <line
+            x1="10"
+            y1="2"
+            x2="10"
+            y2="4"
+          />
+          <line
+            x1="12.8"
+            y1="2.8"
+            x2="12.8"
+            y2="4.8"
+          />
+          <line
+            x1="15"
+            y1="4.5"
+            x2="15"
+            y2="6.5"
+          />
+          <line
+            x1="17"
+            y1="7.5"
+            x2="17"
+            y2="9.5"
+          />
+          <line
+            x1="4.5"
+            y1="10.5"
+            x2="4.5"
+            y2="12.5"
+          />
+          <line
+            x1="7"
+            y1="12"
+            x2="7"
+            y2="14"
+          />
+          <line
+            x1="10"
+            y1="12.5"
+            x2="10"
+            y2="14.5"
+          />
+          <line
+            x1="13"
+            y1="12"
+            x2="13"
+            y2="14"
+          />
+          <line
+            x1="15.5"
+            y1="10.5"
+            x2="15.5"
+            y2="12.5"
+          />
+        </g>
+      </g>
+    </svg>
+  );
+};

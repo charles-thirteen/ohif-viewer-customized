@@ -106,7 +106,7 @@ function OpenIdConnectRoutes({ oidc, routerBasename, userAuthenticationService }
     }
 
     return {
-      Authorization: `Bearer ${user.access_token}`,
+      // Authorization: `Bearer ${user.access_token}`,
     };
   };
 

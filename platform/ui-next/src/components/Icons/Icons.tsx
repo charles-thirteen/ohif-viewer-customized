@@ -232,6 +232,14 @@ import StatusAlert from './Sources/StatusAlert';
 import Undo from './Sources/Undo';
 import TabContours from './Sources/TabContours';
 import IllustrationNotFound from './Sources/IllustrationNotFound';
+import { DentalArch } from './Sources/Dental/DentalArch';
+import { Tooth } from './Sources/Dental/Tooth';
+import { Bitewing } from './Sources/Dental/Bitewing';
+import { CanalAngle } from './Sources/Dental/CanalAngle';
+import { CrownWidth } from './Sources/Dental/CrownWidth';
+import { PeriapicalLength } from './Sources/Dental/PeriapicalLength';
+import { RootLength } from './Sources/Dental/RootLength';
+import { DentalThemeToggle } from './Sources/Dental/DentalThemeToggle';
 //
 //
 type IconProps = React.HTMLAttributes<SVGElement>;
@@ -410,6 +418,15 @@ export const Icons = {
       {...props}
     />
   ),
+  // Dental Icons
+  DentalArch,
+  Tooth,
+  Bitewing,
+  CanalAngle,
+  CrownWidth,
+  PeriapicalLength,
+  RootLength,
+  DentalThemeToggle,
   // Icons
   LayerBackground,
   LayerForeground,

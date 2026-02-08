@@ -2,6 +2,7 @@ import { ExtensionManager, MODULE_TYPES } from './extensions';
 import { ServiceProvidersManager, ServicesManager } from './services';
 import classes, { CommandsManager, HotkeysManager } from './classes';
 import { SystemContextProvider, useSystem } from './contextProviders/SystemProvider';
+import { ThemeContextProvider, useTheme } from './contextProviders/ThemeProvider';
 import { ViewportRefsProvider } from './hooks/useViewportRef';
 
 import DICOMWeb from './DICOMWeb';
@@ -35,6 +36,7 @@ import {
   WorkflowStepsService,
   StudyPrefetcherService,
   MultiMonitorService,
+  StatePersistenceService,
 } from './services';
 
 import { DisplaySetMessage, DisplaySetMessageList } from './services/DisplaySetService';
@@ -91,6 +93,7 @@ const OHIF = {
   useActiveViewportDisplaySets,
   WorkflowStepsService,
   StudyPrefetcherService,
+  StatePersistenceService,
 };
 
 export {
@@ -102,6 +105,7 @@ export {
   ServicesManager,
   ServiceProvidersManager,
   SystemContextProvider,
+  ThemeContextProvider,
   ViewportRefsProvider,
   //
   defaults,
@@ -138,7 +142,9 @@ export {
   PanelService,
   WorkflowStepsService,
   StudyPrefetcherService,
+  StatePersistenceService,
   useSystem,
+  useTheme,
   useActiveViewportDisplaySets,
 };
 

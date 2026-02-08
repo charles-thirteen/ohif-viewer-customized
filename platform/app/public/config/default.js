@@ -4,6 +4,21 @@ window.config = {
   name: 'config/default.js',
   routerBasename: null,
   // whiteLabeling: {},
+  oidc: [
+    {
+      // ~ REQUIRED
+      authority: 'http://localhost:8080/realms/ohif',
+      client_id: 'ohif-viewer',
+      redirect_uri: '/callback',
+      response_type: 'code',
+      scope: 'openid profile email', // email profile openid
+      // ~ OPTIONAL
+      // post_logout_redirect_uri: '/logout-redirect.html',
+      revoke_uri: 'http://localhost:8080/realms/ohif/protocol/openid-connect/revoke',
+      automaticSilentRenew: true,
+      revokeAccessTokenOnSignout: true,
+    },
+  ],
   extensions: [],
   modes: [],
   customizationService: {},

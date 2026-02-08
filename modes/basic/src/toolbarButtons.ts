@@ -562,6 +562,83 @@ const toolbarButtons: Button[] = [
       evaluate: 'evaluate.cornerstoneTool',
     },
   },
+  // ─── Dental Measurement Presets ─────────────────────────────────────────────
+  // Dental-labeled presets that activate the underlying Length/Angle tools.
+  // They use evaluate.dentalPreset which tracks which specific preset was last
+  // clicked, so only that button highlights — not all buttons sharing the same
+  // underlying Cornerstone tool.
+  {
+    id: 'PeriapicalLength',
+    uiType: 'ohif.toolButton',
+    props: {
+      icon: 'PeriapicalLength',
+      label: 'PA Length',
+      tooltip: 'Periapical Length (mm) — activates Length tool, auto-labeled "PA length"',
+      commands: {
+        commandName: 'setDentalPresetActive',
+        commandOptions: {
+          toolGroupIds: ['default', 'mpr', 'SRToolGroup', 'volume3d'],
+          toolName: 'Length',
+          dentalLabel: 'PA length',
+        },
+      },
+      evaluate: 'evaluate.dentalPreset',
+    },
+  },
+  {
+    id: 'CanalAngle',
+    uiType: 'ohif.toolButton',
+    props: {
+      icon: 'CanalAngle',
+      label: 'Canal Angle',
+      tooltip: 'Canal Angle (°) — activates Angle tool, auto-labeled "Canal angle"',
+      commands: {
+        commandName: 'setDentalPresetActive',
+        commandOptions: {
+          toolGroupIds: ['default', 'mpr', 'SRToolGroup', 'volume3d'],
+          toolName: 'Angle',
+          dentalLabel: 'Canal angle',
+        },
+      },
+      evaluate: 'evaluate.dentalPreset',
+    },
+  },
+  {
+    id: 'CrownWidth',
+    uiType: 'ohif.toolButton',
+    props: {
+      icon: 'CrownWidth',
+      label: 'Crown Width',
+      tooltip: 'Crown Width (mm) — activates Length tool, auto-labeled "Crown width"',
+      commands: {
+        commandName: 'setDentalPresetActive',
+        commandOptions: {
+          toolGroupIds: ['default', 'mpr', 'SRToolGroup', 'volume3d'],
+          toolName: 'Length',
+          dentalLabel: 'Crown width',
+        },
+      },
+      evaluate: 'evaluate.dentalPreset',
+    },
+  },
+  {
+    id: 'RootLength',
+    uiType: 'ohif.toolButton',
+    props: {
+      icon: 'RootLength',
+      label: 'Root Length',
+      tooltip: 'Root Length (mm) — activates Length tool, auto-labeled "Root length"',
+      commands: {
+        commandName: 'setDentalPresetActive',
+        commandOptions: {
+          toolGroupIds: ['default', 'mpr', 'SRToolGroup', 'volume3d'],
+          toolName: 'Length',
+          dentalLabel: 'Root length',
+        },
+      },
+      evaluate: 'evaluate.dentalPreset',
+    },
+  },
   // Window Level
   {
     id: 'WindowLevel',

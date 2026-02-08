@@ -18,4 +18,6 @@ type StringNumber = string | number;
  */
 type StringArray = string | string[];
 
-export type { StringNumber, StringArray, ThumbnailType };
+type AppTheme = 'RADIOLOGY' | 'DENTAL';
+
+export type { StringNumber, StringArray, ThumbnailType, AppTheme };

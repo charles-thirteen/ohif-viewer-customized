@@ -7,6 +7,7 @@ import {
   Types as CoreTypes,
   BaseVolumeViewport,
   getRenderingEngines,
+  eventTarget,
 } from '@cornerstonejs/core';
 import {
   ToolGroupManager,
@@ -134,6 +135,34 @@ function commandsModule({
     segmentationService,
     displaySetService,
   } = servicesManager.services as AppTypes.Services;
+
+  // ─── Dental preset auto-label ───────────────────────────────────────────────
+  // When a dental preset button is activated, its label is stored here.
+  // On ANNOTATION_COMPLETED the label is applied to the new annotation's data.
+  let _pendingDentalLabel: string | null = null;
+
+  const _onAnnotationCompleted = (evt: any) => {
+    if (!_pendingDentalLabel) {
+      return;
+    }
+    const { annotation: ann } = evt.detail;
+    if (ann?.data) {
+      ann.data.label = _pendingDentalLabel;
+      // Trigger re-render so the on-canvas text updates with the label
+      const renderingEnginesList = getRenderingEngines();
+      renderingEnginesList.forEach(engine => {
+        const viewportIds = engine.getViewports().map(vp => vp.id);
+        if (viewportIds.length) {
+          cornerstoneTools.utilities.triggerAnnotationRenderForViewportIds(viewportIds);
+        }
+      });
+    }
+  };
+
+  eventTarget.addEventListener(
+    Enums.Events.ANNOTATION_COMPLETED as string,
+    _onAnnotationCompleted
+  );
 
   function _getActiveViewportEnabledElement() {
     return getActiveViewportEnabledElement(viewportGridService);
@@ -773,6 +802,10 @@ function commandsModule({
       utils.downloadCSVReport(measurementService.getMeasurements(measurementFilter));
     },
 
+    downloadJSONMeasurementsReport: ({ measurementFilter }) => {
+      utils.downloadJSONReport(measurementService.getMeasurements(measurementFilter));
+    },
+
     downloadCSVSegmentationReport: ({ segmentationId }) => {
       const segmentation = segmentationService.getSegmentation(segmentationId);
 
@@ -1023,6 +1056,9 @@ function commandsModule({
       }
     },
     setToolActiveToolbar: ({ value, itemId, toolName, toolGroupIds = [], bindings }) => {
+      // Clear any pending dental label when a regular tool is activated
+      _pendingDentalLabel = null;
+
       // Sometimes it is passed as value (tools with options), sometimes as itemId (toolbar buttons)
       toolName = toolName || itemId || value;
 
@@ -1031,6 +1067,22 @@ function commandsModule({
       toolGroupIds.forEach(toolGroupId => {
         actions.setToolActive({ toolName, toolGroupId, bindings });
       });
+    },
+    setDentalPresetActive: ({
+      dentalLabel,
+      toolName,
+      toolGroupIds = [],
+      bindings,
+    }: {
+      dentalLabel: string;
+      toolName: string;
+      toolGroupIds?: string[];
+      bindings?: unknown;
+    }) => {
+      _pendingDentalLabel = dentalLabel;
+      actions.setToolActiveToolbar({ toolName, toolGroupIds, bindings });
+      // Restore the dental label since setToolActiveToolbar clears it
+      _pendingDentalLabel = dentalLabel;
     },
     setToolActive: ({
       toolName,
@@ -2479,6 +2531,9 @@ function commandsModule({
     downloadCSVMeasurementsReport: {
       commandFn: actions.downloadCSVMeasurementsReport,
     },
+    downloadJSONMeasurementsReport: {
+      commandFn: actions.downloadJSONMeasurementsReport,
+    },
     setViewportWindowLevel: {
       commandFn: actions.setViewportWindowLevel,
     },
@@ -2493,6 +2548,9 @@ function commandsModule({
     },
     setToolActiveToolbar: {
       commandFn: actions.setToolActiveToolbar,
+    },
+    setDentalPresetActive: {
+      commandFn: actions.setDentalPresetActive,
     },
     setToolEnabled: {
       commandFn: actions.setToolEnabled,

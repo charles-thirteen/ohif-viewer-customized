@@ -12,10 +12,12 @@ import {
 import { IconPresentationProvider } from '@ohif/ui-next';
 
 import NavBar from '../NavBar';
+import DentalThemeToggleButton from './DentalThemeToggle';
 
 // Todo: we should move this component to composition and remove props base
 
 interface HeaderProps {
+  theme: 'DENTAL' | 'RADIOLOGY';
   children?: ReactNode;
   menuOptions: Array<{
     title: string;
@@ -24,6 +26,7 @@ interface HeaderProps {
   }>;
   isReturnEnabled?: boolean;
   onClickReturnButton?: () => void;
+  onToggleDentalMode?: () => void;
   isSticky?: boolean;
   WhiteLabeling?: {
     createLogoComponentFn?: (React: any, props: any) => ReactNode;
@@ -34,10 +37,12 @@ interface HeaderProps {
 }
 
 function Header({
+  theme,
   children,
   menuOptions,
   isReturnEnabled = true,
   onClickReturnButton,
+  onToggleDentalMode,
   isSticky = false,
   WhiteLabeling,
   PatientInfo,
@@ -50,6 +55,8 @@ function Header({
       onClickReturnButton();
     }
   };
+
+  if (theme === 'DENTAL') return;
 
   return (
     <IconPresentationProvider
@@ -84,6 +91,11 @@ function Header({
             {UndoRedo}
             <div className="border-primary-dark mx-1.5 h-[25px] border-r"></div>
             {PatientInfo}
+            <div className="border-primary-dark mx-1.5 h-[25px] border-r"></div>
+            <DentalThemeToggleButton
+              isDentalTheme={true}
+              onToggle={onToggleDentalMode}
+            />
             <div className="border-primary-dark mx-1.5 h-[25px] border-r"></div>
             <div className="flex-shrink-0">
               <DropdownMenu>

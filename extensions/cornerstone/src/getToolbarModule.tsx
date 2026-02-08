@@ -437,6 +437,52 @@ export default function getToolbarModule({ servicesManager, extensionManager }: 
         };
       },
     },
+    // Dental preset evaluator: tracks which dental preset button was last
+    // activated so that only that specific button shows as active, even when
+    // multiple presets share the same underlying Cornerstone tool (e.g. Length).
+    (() => {
+      let activeDentalButtonId: string | null = null;
+
+      return {
+        name: 'evaluate.dentalPreset',
+        evaluate: ({
+          viewportId,
+          button,
+          itemId,
+        }: {
+          viewportId: string;
+          button: { id: string };
+          itemId?: string;
+        }) => {
+          // When this button was just clicked (itemId matches), record it
+          if (itemId === button.id) {
+            activeDentalButtonId = button.id;
+          }
+
+          const toolGroup = toolGroupService.getToolGroupForViewport(viewportId);
+          if (!toolGroup) {
+            return { disabled: false, isActive: false };
+          }
+
+          const toolName = toolbarService.getToolNameForButton(button);
+          const activeTool = toolGroup.getActivePrimaryMouseButtonTool();
+
+          // Active only when this specific button was last clicked AND
+          // the underlying Cornerstone tool is still the active primary tool
+          const isActive = activeDentalButtonId === button.id && activeTool === toolName;
+
+          // If the underlying tool changed (user picked something else), clear tracking
+          if (activeDentalButtonId === button.id && activeTool !== toolName) {
+            activeDentalButtonId = null;
+          }
+
+          return {
+            disabled: false,
+            isActive,
+          };
+        },
+      };
+    })(),
     {
       name: 'evaluate.cornerstoneTool.toggle.ifStrictlyDisabled',
       evaluate: ({ viewportId, button, disabledText }) =>
