@@ -50,6 +50,137 @@ provided by the <a href="https://ohif.org/">Open Health Imaging Foundation (OHIF
 | <img src="https://github.com/OHIF/Viewers/blob/master/platform/docs/docs/assets/img/demo-video.webp?raw=true" alt="VIDEO" width="350"/> | Video  | [Demo](https://viewer.ohif.org/viewer?StudyInstanceUIDs=2.25.96975534054447904995905761963464388233) |
 | <img src="https://github.com/OHIF/Viewers/blob/master/platform/docs/docs/assets/img/microscopy.webp?raw=true" alt="microscopy" width="350"/> | Slide Microscopy  | [Demo](https://viewer.ohif.org/microscopy?StudyInstanceUIDs=2.25.141277760791347900862109212450152067508) |
 
+## 24x7 Dental Imaging Features
+
+This fork extends the OHIF Viewer with dental-specific imaging capabilities for the 24x7 practice workflow.
+
+### Keycloak Authentication
+
+The viewer is integrated with Keycloak for OpenID Connect (OIDC) authentication.
+
+- Authority: `http://localhost:8080/realms/ohif`
+- Client ID: `ohif-viewer`
+- Response type: Authorization Code (`code`)
+- Scopes: `openid profile email`
+- Automatic silent token renewal enabled
+- Multi-tab logout support
+
+Configuration is in `platform/app/public/config/default.js` under the `oidc` array.
+
+#### Running a Local Keycloak Server
+
+1. **Start Keycloak with Docker:**
+
+```bash
+docker run -d \
+  --name keycloak \
+  -p 8080:8080 \
+  -e KC_BOOTSTRAP_ADMIN_USERNAME=admin \
+  -e KC_BOOTSTRAP_ADMIN_PASSWORD=admin \
+  quay.io/keycloak/keycloak:latest \
+  start-dev
+```
+
+2. **Create the realm and client:**
+
+   - Open `http://localhost:8080/admin` and log in with `admin` / `admin`
+   - Create a new realm named `ohif`
+   - Inside the `ohif` realm, create a new client:
+     - **Client ID:** `ohif-viewer`
+     - **Client type:** OpenID Connect
+     - **Valid redirect URIs:** `http://localhost:3000/*`
+     - **Valid post logout redirect URIs:** `http://localhost:3000/*`
+     - **Web origins:** `http://localhost:3000`
+   - Under the client's settings, ensure **Standard flow** is enabled (Authorization Code)
+   - Create a user in the `ohif` realm with a username and password
+
+3. **Start the viewer:**
+
+```bash
+yarn dev
+```
+
+The viewer will redirect to Keycloak for login. After authentication, the user is redirected back to the viewer.
+
+### Dental Theme Toggle
+
+A dual-theme system with Radiology (default dark) and Dental (teal accent) themes.
+
+- Toggle in the viewer header switches between `RADIOLOGY` and `DENTAL` themes
+- Theme preference persists in `localStorage` under `user-preferred-theme`
+- Dental theme applies CSS class `dental-theme` to `document.documentElement`
+- Theme provider: `platform/core/src/contextProviders/ThemeProvider.tsx`
+
+### Custom Dental Header with Tooth Selector
+
+The original OHIF header is replaced with a practice-specific dental header:
+
+- **Tooth selector dropdown** with support for both FDI and Universal numbering systems
+- Toggle between numbering systems via a button in the header
+- Quadrant-based layout (UR, UL, LR, LL) for FDI notation
+- Selected tooth number is displayed as a chip in the header
+- File: `platform/ui-next/src/components/Header/DentalHeader.tsx`
+
+### 2x2 Hanging Protocol
+
+A dental-specific hanging protocol that displays a 2x2 grid layout:
+
+```
++--------------------+--------------------+
+|  Current image     |  Prior exam        |
+|  (study 0, s0)     |  (study 1, s0)     |
++--------------------+--------------------+
+|  Bitewing (s1)     |  Bitewing (s2)     |
+|  placeholder       |  placeholder       |
++--------------------+--------------------+
+```
+
+- Top-left: Current study, first matching series
+- Top-right: Prior exam (same modality), first matching series
+- Bottom row: Additional series from current study (bitewing placeholders)
+- File: `extensions/default/src/hangingprotocols/hpDental.ts`
+
+### Dental Measurement Presets
+
+Pre-configured measurement tools with auto-labeling for common dental measurements:
+
+| Preset | Underlying Tool | Auto-Label |
+|--------|----------------|------------|
+| Periapical Length | Length | PA length |
+| Canal Angle | Angle | Canal angle |
+| Crown Width | Length | Crown width |
+| Root Length | Length | Root length |
+
+These appear as dedicated toolbar buttons in the measurement tools section. Each preset activates the corresponding cornerstone tool and automatically applies the dental label to new annotations.
+
+Defined in: `modes/basic/src/toolbarButtons.ts`
+
+### Measurement List with Filtering and Sorting
+
+The measurement panel includes built-in filtering and sorting controls:
+
+- **Text search**: Filter measurements by label, display value, or tool name
+- **Tool type filter**: Dropdown populated dynamically from active measurement types (Length, Angle, etc.)
+- **Sort options**: Default order, Label A-Z/Z-A, Tool A-Z/Z-A, Value low-high/high-low
+- **Active filter summary**: Shows "Showing X of Y" count with a "Clear filters" button
+- File: `platform/ui-next/src/components/MeasurementTable/MeasurementTable.tsx`
+
+### Export to JSON
+
+Measurements can be exported as JSON via the measurement panel actions bar. The JSON export includes all measurement data (labels, values, tool types, study/series references).
+
+### State Persistence
+
+Measurements are automatically persisted to a backend API (`localhost:3050`) and restored when reopening the same study:
+
+- **Auto-save**: Debounced (2s) save on measurement add/update/remove
+- **Hydration**: Annotations are fetched from the backend and restored into cornerstone after the viewport image loads
+- **Full annotation data**: Saves the complete cornerstone annotation object (handles, cached stats, metadata) for pixel-perfect restoration
+- **Auth**: Uses the Keycloak OIDC access token (via `userAuthService.getUser().access_token`) for backend API requests, independent of DICOMWeb auth
+- **Flush on exit**: All pending saves are flushed when leaving the viewer mode
+
+---
+
 ## About
 
 The OHIF Viewer can retrieve
