@@ -1,6 +1,6 @@
 import { PubSubService } from '../_shared/pubSubServiceInterface';
 
-const API_BASE = 'http://localhost:3050';
+const API_BASE = 'https://ohif-backend.duckdns.org';
 
 const EVENTS = {
   STATE_LOADED: 'event::statePersistence:stateLoaded',
@@ -90,10 +90,7 @@ class StatePersistenceService extends PubSubService {
 
   // --- Annotations ---
 
-  async saveAnnotations(
-    studyUID: string,
-    annotations: SerializedAnnotation[]
-  ): Promise<void> {
+  async saveAnnotations(studyUID: string, annotations: SerializedAnnotation[]): Promise<void> {
     const result = await this._fetch(`/api/state/annotations/${studyUID}`, {
       method: 'PUT',
       body: JSON.stringify({ annotations }),
@@ -129,10 +126,7 @@ class StatePersistenceService extends PubSubService {
     });
   }
 
-  saveAnnotationsDebounced(
-    studyUID: string,
-    annotations: SerializedAnnotation[]
-  ): void {
+  saveAnnotationsDebounced(studyUID: string, annotations: SerializedAnnotation[]): void {
     if (this._saveAnnotationsTimer) {
       clearTimeout(this._saveAnnotationsTimer);
     }
